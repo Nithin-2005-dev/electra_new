@@ -1,0 +1,23 @@
+@import "tailwindcss";
+@theme {
+  --color-primary: #00b8d9;
+  --color-secondary: #14f7ff;
+  --color-background: #0d1117;
+  --color-surface: #1e1e2e;
+  --color-textPrimary: #e0e0e0;
+  --color-textMuted: #9e9e9e;
+  --colorAccent: #ff3366;
+  --colorGlow: #0ff0fc;
+}
+/* src/app/globals.css (add or merge) */
+html, body { height: 100%; }
+body { background: #0D1117; color: #E0E0E0; }
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
