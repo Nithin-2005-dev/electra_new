@@ -8,10 +8,16 @@
     "start": "next start"
   },
   "dependencies": {
+    "@rive-app/react-canvas": "^4.23.4",
     "axios": "^1.12.2",
+    "embla-carousel": "^8.6.0",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.23.24",
+    "keen-slider": "^6.8.6",
     "konva": "^10.0.2",
+    "lottie-react": "^2.4.1",
     "lucide-react": "^0.545.0",
     "mongoose": "^8.19.1",
     "next": "15.5.5",

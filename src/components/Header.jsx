@@ -11,20 +11,20 @@ const NAV = [
   { href: "/Resources", label: "Resources" },
   { href: "/Team", label: "Team" },
   { href: "/Merch", label: "Merch" },
-  { href: "/Join", label: "Join Us", cta: true },
+  // { href: "/Join", label: "Join Us", cta: true },
 ];
 
 export default function Header() {
   const pathname = usePathname() || "/";
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [progress, setProgress] = useState(0); // existing scroll bar (top)
-  const [routePct, setRoutePct] = useState(0); // new: page load percent (bottom)
-  const [routeActive, setRouteActive] = useState(false); // bar visibility
+  const [progress, setProgress] = useState(0);
+  const [routePct, setRoutePct] = useState(0);
+  const [routeActive, setRouteActive] = useState(false);
   const btnRef = useRef(null);
   const firstLinkRef = useRef(null);
 
-  // Scroll effects (top progress)
+  // Scroll progress
   useEffect(() => {
     const onScroll = () => {
       const h = document.documentElement;
@@ -35,21 +35,19 @@ export default function Header() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []); // scroll indicator is separate from loader [web:209]
+  }, []);
 
-  // Lock body scroll when mobile menu is open
+  // Lock body scroll on mobile menu
   useEffect(() => {
     const body = document.body;
     if (open) {
       const prev = body.style.overflow;
       body.style.overflow = "hidden";
-      return () => {
-        body.style.overflow = prev || "";
-      };
+      return () => (body.style.overflow = prev || "");
     }
   }, [open]);
 
-  // Focus management + Esc to close
+  // Focus management
   useEffect(() => {
     if (!open) return;
     firstLinkRef.current?.focus();
@@ -66,36 +64,24 @@ export default function Header() {
   // Close on route change
   useEffect(() => setOpen(false), [pathname]);
 
-  // Pointer glow for CTA
-  const glowMove = (e) => {
-    const el = e.currentTarget;
-    const r = el.getBoundingClientRect();
-    el.style.setProperty("--x", `${e.clientX - r.left}px`);
-    el.style.setProperty("--y", `${e.clientY - r.top}px`);
-  };
-
-  // NEW: page loading percentage (runs on initial mount and on each pathname change)
+  // Page load progress
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     let done = false;
     setRouteActive(true);
     setRoutePct(5);
 
-    // Small ramp-up timer toward ~85–90% while assets load
-    let ramp = window.setInterval(() => {
-      setRoutePct((p) => (p < 90 ? p + Math.max(1, (90 - p) * 0.05) : p));
+    const ramp = setInterval(() => {
+      setRoutePct((p) => (p < 90 ? p + (90 - p) * 0.05 : p));
     }, 120);
 
-    // Gather images in main area and track their load state
     const root = document.querySelector("main") || document.body;
     const imgs = Array.from(root.querySelectorAll("img"));
     const total = imgs.length;
-    let loaded = imgs.filter((img) => img.complete).length; // HTMLImageElement.complete [web:197]
+    let loaded = imgs.filter((i) => i.complete).length;
 
-    const updateFromImages = () => {
+    const update = () => {
       if (done) return;
-      // Map image progress into 10–95%
       if (total > 0) {
         const mapped = 10 + (loaded / total) * 85;
         setRoutePct((p) => Math.max(p, Math.min(95, mapped)));
@@ -104,103 +90,96 @@ export default function Header() {
 
     const listeners = [];
     imgs.forEach((img) => {
-      if (img.complete) return; // already loaded [web:197]
+      if (img.complete) return;
       const onDone = () => {
-        loaded += 1;
-        updateFromImages();
+        loaded++;
+        update();
         img.removeEventListener("load", onDone);
-        img.removeEventListener("error", onDone); // load fires when resource finishes; error also settles it [web:202]
+        img.removeEventListener("error", onDone);
       };
-      img.addEventListener("load", onDone, { once: true }); // load event for <img> [web:202]
+      img.addEventListener("load", onDone, { once: true });
       img.addEventListener("error", onDone, { once: true });
       listeners.push([img, onDone]);
     });
 
-    // Fallback completion after a soft timeout or when all images are done
-    const tryFinish = () => {
+    const finish = () => {
       if (done) return;
-      if (total === 0 || loaded >= total) {
-        done = true;
-        window.clearInterval(ramp);
-        setRoutePct(100);
-        // allow CSS transition to show full bar briefly, then hide
-        window.setTimeout(() => {
-          setRouteActive(false);
-          setRoutePct(0);
-        }, 400);
-      }
+      done = true;
+      clearInterval(ramp);
+      setRoutePct(100);
+      setTimeout(() => {
+        setRouteActive(false);
+        setRoutePct(0);
+      }, 400);
     };
 
-    // Periodic check to finish when all images are done
-    const finCheck = window.setInterval(() => tryFinish(), 150);
+    const finCheck = setInterval(() => {
+      if (loaded >= total) finish();
+    }, 150);
 
-    // Hard cap to avoid a stuck bar if some resources never resolve
-    const hardCap = window.setTimeout(() => {
-      setRoutePct((p) => Math.max(p, 95));
-      tryFinish();
-    }, 6000);
+    const hardCap = setTimeout(finish, 6000);
 
-    // Initial compute
-    updateFromImages();
-    tryFinish();
+    update();
+    if (total === 0) finish();
 
     return () => {
       done = true;
-      window.clearInterval(ramp);
-      window.clearInterval(finCheck);
-      window.clearTimeout(hardCap);
+      clearInterval(ramp);
+      clearInterval(finCheck);
+      clearTimeout(hardCap);
       listeners.forEach(([img, fn]) => {
         img.removeEventListener("load", fn);
         img.removeEventListener("error", fn);
       });
     };
-  }, [pathname]); // re-run whenever the route changes (progress is percent of page load, not scroll) [web:209][web:202][web:197]
+  }, [pathname]);
 
   return (
     <header
       className={[
-        "fixed inset-x-0 top-0 z-50 transition-all duration-200 motion-reduce:transition-none",
-        "bg-surface/80 backdrop-blur supports-[backdrop-filter]:bg-surface/60",
-        "border-b border-white/10",
-        scrolled ? "py-1.5 sm:py-2" : "py-2 sm:py-4",
+        "fixed inset-x-0 top-0 z-50 transition-all duration-200",
+        "bg-surface/80 backdrop-blur supports-[backdrop-filter]:bg-surface/60 border-b border-white/10",
+        scrolled ? "py-1 sm:py-2" : "py-2 sm:py-3 md:py-4",
       ].join(" ")}
-      aria-label="Primary"
     >
-      {/* Neon scroll progress (top edge) */}
-      <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-white/0">
+      {/* Top scroll progress */}
+      <span aria-hidden className="absolute inset-x-0 top-0 h-[2px] bg-white/0">
         <span
-          className="block h-full bg-gradient-to-r from-primary via-secondary to-primary transition-[width] duration-200 motion-reduce:transition-none"
+          className="block h-full bg-gradient-to-r from-primary via-secondary to-primary transition-[width] duration-200"
           style={{ width: `${progress}%` }}
         />
       </span>
 
-      {/* Top bar */}
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-4">
-        <Link href="/" className="group flex min-w-0 items-center gap-2">
+      {/* Navbar container */}
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-2 sm:px-3 md:px-4">
+        {/* Logo */}
+        <Link href="/" className="group flex min-w-0 items-center gap-1 sm:gap-2 shrink-0">
           <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_12px_theme(colors.glow)] motion-safe:animate-pulse" />
-          <span className="truncate text-base sm:text-lg font-semibold text-textPrimary tracking-tight">
+          <span className="truncate text-sm sm:text-base md:text-lg font-semibold text-textPrimary tracking-tight">
             Electra
           </span>
-          <span className="sr-only">Home</span>
         </Link>
 
+        {/* Hamburger button */}
         <button
           ref={btnRef}
-          className="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-md text-textMuted hover:text-textPrimary focus:outline-none focus:ring-2 focus:ring-primary"
-          aria-label="Toggle menu"
-          aria-controls="primary-menu"
-          aria-expanded={open}
+          className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-md text-textMuted hover:text-textPrimary focus:outline-none focus:ring-2 focus:ring-primary shrink-0"
           onClick={() => setOpen((v) => !v)}
+          aria-label="Toggle menu"
         >
-          <svg width="26" height="26" viewBox="0 0 24 24" className={open ? "hidden" : "block"}>
-            <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
-          <svg width="26" height="26" viewBox="0 0 24 24" className={open ? "block" : "hidden"}>
-            <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M6 6l12 12M6 18L18 6" />
-          </svg>
+          {open ? (
+            <svg width="26" height="26" viewBox="0 0 24 24">
+              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M6 6l12 12M6 18L18 6" />
+            </svg>
+          ) : (
+            <svg width="26" height="26" viewBox="0 0 24 24">
+              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          )}
         </button>
 
-        <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+        {/* Desktop links */}
+        <div className="hidden lg:flex items-center gap-4 xl:gap-8">
           {NAV.slice(0, 5).map((item) => {
             const current = pathname === item.href;
             return (
@@ -213,7 +192,7 @@ export default function Header() {
                 {item.label}
                 <span
                   className={[
-                    "absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-primary to-secondary transition-all duration-200 motion-reduce:transition-none",
+                    "absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-primary to-secondary transition-all duration-200",
                     current ? "w-full" : "group-hover:w-full",
                   ].join(" ")}
                 />
@@ -221,50 +200,44 @@ export default function Header() {
             );
           })}
 
-          <Link
+          {/* <Link
             href="/join"
-            onMouseMove={(e) => {
-              const el = e.currentTarget;
-              const r = el.getBoundingClientRect();
-              el.style.setProperty("--x", `${e.clientX - r.left}px`);
-              el.style.setProperty("--y", `${e.clientY - r.top}px`);
-            }}
-            className="relative overflow-hidden rounded-md bg-primary px-4 py-2 text-sm font-semibold text-background shadow-[0_0_12px_theme(colors.glow/0.2)] hover:bg-secondary transition motion-reduce:transition-none group/cta"
+            className="relative overflow-hidden rounded-md bg-primary px-3 sm:px-4 py-2 text-sm font-semibold text-background hover:bg-secondary transition group/cta"
           >
             <span className="relative z-10">Join Us</span>
             <span
               aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover/cta:opacity-100 motion-reduce:opacity-0"
+              className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover/cta:opacity-100"
               style={{
                 background:
                   "radial-gradient(160px circle at var(--x,50%) var(--y,50%), rgba(20,247,255,0.35), transparent 60%)",
               }}
             />
-          </Link>
+          </Link> */}
         </div>
       </nav>
 
       {/* Mobile dropdown */}
       <div
-        id="primary-menu"
         className={[
-          "lg:hidden absolute left-0 right-0 top-full z-40 transition-all duration-200 motion-reduce:transition-none",
-          open ? "opacity-100 translate-y-0 pointer-events-auto visible" : "opacity-0 -translate-y-2 pointer-events-none invisible",
+          "lg:hidden absolute left-0 right-0 top-full z-40 transition-all duration-200",
+          open
+            ? "opacity-100 translate-y-0 pointer-events-auto visible"
+            : "opacity-0 -translate-y-2 pointer-events-none invisible",
         ].join(" ")}
-        aria-hidden={!open}
       >
-        <div className="w-screen">
-          <div className="mx-auto max-w-7xl px-3 sm:px-4">
-            <div className="mt-2 rounded-2xl border border-white/10 bg-surface/95 backdrop-blur shadow-[0_20px_40px_rgba(0,0,0,.35)] max-h-[85svh] overflow-y-auto overscroll-contain">
-              <div className="sticky top-0 z-10 flex items-center justify-between gap-2 px-3 py-2 border-b border-white/10 bg-surface/95 backdrop-blur">
+        <div className="w-full">
+          <div className="px-2 sm:px-3">
+            <div className="mt-2 rounded-2xl border border-white/10 bg-surface/95 backdrop-blur shadow-[0_20px_40px_rgba(0,0,0,.35)] max-h-[85svh] overflow-y-auto">
+              {/* <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-2 border-b border-white/10 bg-surface/95">
                 <span className="text-textPrimary text-sm font-semibold">Menu</span>
                 <Link
                   href="/join"
-                  className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-background shadow-[0_0_10px_theme(colors.glow/0.2)] hover:bg-secondary transition"
+                  className="rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-background hover:bg-secondary transition"
                 >
                   Join Us
                 </Link>
-              </div>
+              </div> */}
               <div className="py-1">
                 {NAV.map((item, i) => {
                   const current = pathname === item.href;
@@ -275,11 +248,10 @@ export default function Header() {
                       ref={i === 0 ? firstLinkRef : undefined}
                       aria-current={current ? "page" : undefined}
                       className={[
-                        "block rounded-md px-4 py-3 text-base outline-none focus:ring-2 focus:ring-primary",
+                        "block rounded-md px-4 py-2.5 text-base outline-none focus:ring-2 focus:ring-primary",
                         item.cta
-                          ? "relative overflow-hidden bg-primary text-background font-semibold hover:bg-secondary transition"
-                          : "text-textMuted hover:text-textPrimary transition",
-                        "motion-reduce:transition-none",
+                          ? "bg-primary text-background font-semibold hover:bg-secondary"
+                          : "text-textMuted hover:text-textPrimary",
                       ].join(" ")}
                     >
                       {item.label}
@@ -293,7 +265,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* NEW: Page loading percent bar at header bottom (not scroll-based) */}
+      {/* Bottom loading bar */}
       <div aria-hidden className="absolute inset-x-0 bottom-0 h-[3px] bg-white/0 overflow-hidden">
         <div
           className={[
@@ -304,9 +276,6 @@ export default function Header() {
           style={{ width: `${routePct}%` }}
         />
       </div>
-      <span className="sr-only" aria-live="polite">
-        {routeActive ? `Loading ${Math.round(routePct)} percent` : "Loaded"}
-      </span>
     </header>
   );
-}
+} 
