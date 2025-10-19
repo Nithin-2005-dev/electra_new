@@ -42,7 +42,7 @@ export default function AlumniEmbla() {
   return (
     <section className="relative py-16 sm:py-20">
       <div className="max-w-[1150px] mx-auto px-3 sm:px-4">
-        <h2 className="text-[#e7faff] text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide uppercase mb-10 sm:mb-14 drop-shadow-[0_0_28px_rgba(20,247,255,.5)]">
+        <h2 className="text-[#e7faff] text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-wide uppercase mb-10 sm:mb-14 drop-shadow-[0_0_28px_rgba(20,247,255,.5)] text-center">
           Our Alumni
         </h2>
 
