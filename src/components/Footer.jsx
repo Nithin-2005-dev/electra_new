@@ -118,8 +118,8 @@ export default function Footer() {
                 <h3 id="footer-contact" className="sectionTitle text-[12px] font-bold mb-3">Contact</h3>
                 <ul className="space-y-2.5">
                   <li><a href="mailto:societyelectra@gmail.com" className="hit flex items-center gap-3"><MdEmail className="icon text-xl"/><span className="link text-[14px]">societyelectra@gmail.com</span></a></li>
-                  <li><a href="tel:+916291090769" className="hit flex items-center gap-3"><FaPhoneAlt className="icon text-xl"/><span className="link text-[14px]">+91 62910 90769</span></a></li>
-                  <li><a href="https://wa.me/916291090769?text=Hello%2C%20I%20visited%20the%20Electra%20Society%20website." target="_blank" rel="noreferrer" className="hit flex items-center gap-3"><IoLogoWhatsapp className="icon text-xl"/><span className="link text-[14px]">WhatsApp</span></a></li>
+                  <li><a href="tel:+91 8793248290" className="hit flex items-center gap-3"><FaPhoneAlt className="icon text-xl"/><span className="link text-[14px]">+91 8793248290</span></a></li>
+                  <li><a href="https://api.whatsapp.com/send?phone=918793248290&text=Hello%2C%20I%20visited%20the%20electra%20society%20website." target="_blank" rel="noreferrer" className="hit flex items-center gap-3"><IoLogoWhatsapp className="icon text-xl"/><span className="link text-[14px]">WhatsApp</span></a></li>
                 </ul>
                 <hr className="mobileDivider" />
               </section>
