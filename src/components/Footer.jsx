@@ -143,7 +143,7 @@ export default function Footer() {
               <p className="text-[12px] sm:text-sm">Designed and developed by Electra Society Development Team</p>
             </div>
 
-            <button
+            {/* <button
               type="button"
               aria-label="Scroll to top"
               className="power"
@@ -153,7 +153,7 @@ export default function Footer() {
                 <path d="M12 3v9" stroke={COLORS.neon1} strokeWidth="2" strokeLinecap="round" />
                 <circle cx="12" cy="14" r="7" stroke={COLORS.neon1} strokeWidth="2" />
               </svg>
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

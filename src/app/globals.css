@@ -92,3 +92,6 @@ html {
 .scroll-area::-webkit-scrollbar-thumb {
   border-radius: 10px;
 }
+body {
+  overscroll-behavior-x: none;
+}

@@ -5,7 +5,9 @@ import ElectraPillars from "../components/Pillars";
 import ElectraEnergyTimeline from "../components/Events";
 import SponsorsSection from "../components/Sponsors";
 import AlumniSection from "../components/Alumni";
-export default function Page() {
+export const dynamic = 'force-dynamic';
+export default async function Page() {
+   await new Promise(r => setTimeout(r, 2000));
   return (
     <main>
       <Hero/>

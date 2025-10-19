@@ -409,12 +409,6 @@ function ElectraScope() {
               <ScopeRadio label="Preview" hint="In-page modal" />
               <ScopeRadio label="Open in tab" hint="Fallback option" />
             </div>
-
-            {/* footer hints */}
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-              <ScopePill text="Mobile chips on small screens" />
-              <ScopePill text="Desktop grid with highlight" />
-            </div>
           </div>
         </div>
 
