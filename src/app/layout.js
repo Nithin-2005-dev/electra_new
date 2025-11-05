@@ -11,7 +11,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <link rel="icon" href="https://i.imghippo.com/files/mt3cO1728475194.png" />
+      <link rel="icon" href="https://res.cloudinary.com/dqa3ov76r/image/upload/v1729535834/favoritePhotos/ldlchr4ijcpgfq8nu2gx.jpg" />
       <body className="bg-background text-textPrimary antialiased">
         <Header />
         <BackgroundElectric />
